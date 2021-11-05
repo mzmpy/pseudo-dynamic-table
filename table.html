@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>html 简单的table样式</title>
+    <style type="text/css">
+        /* body {
+            background-color: rgb(75, 75, 75);
+        } */
+
+        table tr td div {
+            display: inline-block;
+            box-sizing: border-box;
+            width: 100%;
+            border-top: 0.5px solid #e6e6e6;
+            /* padding: 7px 5px; */
+        }
+
+        table tr th div {
+            padding: 0.5em;
+        }
+
+        table tr td div:first-child {
+            border-top: 0px none transparent;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        tr {
+            width: 100%;
+        }
+        
+        table.table-box {
+            font-family: verdana, arial, sans-serif;
+            font-size: 11px;
+            /* color: rgba(51, 51, 51, 0.5); */
+            color: rgba(0, 0, 0, 1);
+            border-collapse: collapse;
+        }
+
+        table.table-box th {
+            overflow: hidden;
+            text-align: left;
+        }
+
+        table.table-box td {
+            overflow: hidden;
+            border-width: 0.5px;
+            border-style: solid;
+            border-color: #e6e6e6;
+        }
+
+        .tr-hover {
+            background-color: rgb(242, 242, 242);
+            cursor: default;
+        }
+
+        .table-head {
+            background-color: #f1f4f8;
+            width: 100%;
+        }
+
+        .table-body {
+            width: 100%;
+        }
+
+        .sub-head {
+            border: none;
+            font-weight: 500;
+        }
+
+        table .table-body td div span {
+            display: inline-block;
+            width: 100%;
+            color: #537ee4;
+            margin: 0.5em;
+        }
+
+        /* th::before, td::before {
+            content: '';
+            display: inline-block;
+            height: 100%;
+            vertical-align: middle;
+        } */
+    </style>
+</head>
+
+<body>
+    <table class="table-box" id="pseudo-dynamic-table">
+        <!-- <tr class="table-head">
+            <th>Info Header 1</th>
+            <th>Info Header 2</th>
+            <th>Info Header 3</th>
+        </tr>
+        <tr class="table-body sub-head"><td colspan="3">检查内容</td></tr>
+        <tr class="table-body">
+            <td id="test">
+                <div>Item 1A</div>
+            </td>
+            <td>Item 1B</td>
+            <td>Item 1C</td>
+        </tr>
+        <tr class="table-body">
+            <td>Item 2A</td>
+            <td>Item 2B</td>
+            <td>Item 2C</td>
+        </tr>
+        <tr class="table-body">
+            <td>Item 3A</td>
+            <td>Item 3B</td>
+            <td>Item 3C</td>
+        </tr>
+        <tr class="table-body">
+            <td>Item 4A</td>
+            <td>Item 4B</td>
+            <td>Item 4C</td>
+        </tr>
+        <tr class="table-body">
+            <td>Item 5A</td>
+            <td>Item 5B</td>
+            <td>Item 5C</td>
+        </tr> -->
+    </table>
+    <button onclick="addTableRowOpt()">添加表格行</button>
+    <button onclick="addSubHeadOpt()">添加子项头</button>
+
+    <script type="text/javascript">
+        function addItem(aimedId, {content, style}) {
+            let div = document.createElement("div");
+
+            div.innerHTML = content;
+            for(let styleItem in style) {
+                div.style[styleItem] = style[styleItem];
+            }
+
+            document.getElementById(aimedId).appendChild(div);
+        }
+
+        function addHead(tblId, config) {
+            // config是个数组
+            let table = document.getElementById(tblId);
+            let tr = document.createElement("tr");
+
+            tr.classList.add("table-head");
+            for(let i=0; i<config.length; i++) {
+                let th = document.createElement("th");
+                th.width = config[i].width;
+                th.innerHTML = `<div>` + `${config[i].content}` + `</div>`;
+                tr.appendChild(th);
+            }
+
+            table.appendChild(tr);
+        }
+
+        function addSubHead(tblId, content, num) {
+            let table = document.getElementById(tblId);
+            let tr = document.createElement("tr");
+
+            tr.classList.add("table-body");
+            tr.classList.add("sub-head");
+            tr.innerHTML = `<td colspan="${num}">` + `<div style="padding: 7px 5px;">` + `${content}` + `</div>` + `</td>`;
+            table.appendChild(tr);
+        }
+
+        function addTableRow(tblId, config) {
+            // config是个数组
+            let table = document.getElementById(tblId);
+            let tr = document.createElement("tr");
+
+            tr.classList.add("table-body");
+            for(let i=0; i<config.length; i++) {
+                let td = document.createElement("td");
+                let div = document.createElement("div");
+
+                if(config[i].attrs) {
+                    let attrs = config[i].attrs;
+                    for(let attr in attrs) {
+                        // div[attr] = attrs[attr];
+                        if(attr === 'style') {
+                            console.log(attrs[attr]);
+                            for(let styleItem in attrs[attr]) {
+                                div[attr][styleItem] = attrs[attr][styleItem];
+                            }
+                        } else {
+                            div[attr] = attrs[attr];
+                        }
+                    }
+                }
+
+                if(config[i].content) {
+                    div.innerHTML = `<div style="padding: 5px;">` + `${config[i].content}` + `</div>`;
+                } else if(config[i].templates) {
+                    let templates = config[i].templates
+                    for(let item in templates) {
+                        let el = createElementFromStr(templates[item]);
+                        if(config[i].relate) {
+                            let relate = config[i].relate;
+                            el.addEventListener(relate[item].event, () => {
+                                relate[item].callback(item, (relate[item].args));
+                            });
+                        }
+                        div.appendChild(el);
+                    }
+                }
+
+                td.appendChild(div);
+                tr.appendChild(td);
+            }
+
+            table.appendChild(tr);
+        }
+
+        function createElementFromStr(str) {
+            let div =  document.createElement('div')
+            div.innerHTML = str;
+            return div.childNodes[0];
+        }
+
+        function tablify () {
+            let rows = document.getElementsByTagName("tr");
+            
+            for(let i=0; i<rows.length; i++) {
+                rows[i].firstElementChild.style.borderLeftWidth = '0px';
+                rows[i].lastElementChild.style.borderRightWidth = '0px';
+
+                rows[i].onmouseover = function(e) {
+                    if(!this.classList.contains('sub-head')) {
+                        this.classList.add('tr-hover');
+                    }
+                }
+
+                rows[i].onmouseout = function(e) {
+                    if(!this.classList.contains('sub-head')) {
+                        this.classList.remove('tr-hover');
+                    }
+                }
+            }
+        }
+
+        function addSubHeadOpt() {
+            addSubHead("pseudo-dynamic-table", "人员管理", config.length);
+            tablify();
+        }
+
+        function addTableRowOpt() {
+            addTableRow("pseudo-dynamic-table", rowConfig);
+            tablify();
+        }
+
+        var config = [
+            {
+                width: '14.286%', 
+                content: '序号'
+            }, 
+            {
+                width: '14.286%', 
+                content: '内容'
+            }, 
+            {
+                width: '14.286%', 
+                content: '分值'
+            }, 
+            {
+                width: '14.286%', 
+                content: '评分标准'
+            }, 
+            {
+                width: '14.286%', 
+                content: '解决方法'
+            }, 
+            {
+                width: '14.286%', 
+                content: '是否完成'
+            }, 
+            {
+                width: '14.286%', 
+                content: '操作'
+            }
+        ];
+
+        var rowConfig = [
+            {
+                content: `量子力学量力学，实变函数学事变；量子力学量力学，实变函数学事变；量子力学量力学，实变函数学事变；
+                量子力学量力学，实变函数学事变；量子力学量力学，实变函数学事变；`, 
+                attrs: {
+                    style: {
+                        padding: '7px 5px'
+                    }
+                }
+            }, 
+            {
+                content: '是', 
+                attrs: {
+                    style: {
+                        padding: '7px 5px'
+                    }
+                }
+            }, 
+            {
+                content: '2', 
+                attrs: {
+                    style: {
+                        padding: '7px 5px'
+                    }
+                }
+            }, 
+            {
+                content: '评分标准内容', 
+                attrs: {
+                    style: {
+                        padding: '7px 5px'
+                    }
+                }
+            }, 
+            {
+                content: '父内容', 
+                attrs: {
+                    id: 'icon'
+                }
+            }, 
+            {
+                content: '父内容', 
+                attrs: {
+                    id: 'text'
+                }
+            }, 
+            {
+                templates: {
+                    icon: `<span>添加清单</span>`, 
+                    text: `<span>上传文件</span>`
+                }, 
+                relate: {
+                    icon: {
+                        event: 'click',
+                        callback: addItem, 
+                        args: {
+                            content: '图标', 
+                            style: {
+                                padding: '7px 5px'
+                            }
+                        }
+                    }, 
+                    text: {
+                        event: 'click',
+                        callback: addItem, 
+                        args: {
+                            content: 'XXX内容', 
+                            style: {
+                                padding: '7px 5px'
+                            }
+                        }
+                    }
+                }
+            }, 
+        ];
+
+        window.onload = function() {
+            addHead("pseudo-dynamic-table", config);
+        }
+    </script>
+</body>
+
+</html>

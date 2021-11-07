@@ -6,9 +6,9 @@
     <title>html 简单的table样式</title>
     <style type="text/css">
     /*****************************************************************************************************/
-        /* body {
-            background-color: rgb(75, 75, 75);
-        } */
+        body {
+            line-height: 1.5em;
+        }
 
         table tr td > div > div {
             display: inline-block;
@@ -50,7 +50,8 @@
             border-width: 0.5px;
             border-style: solid;
             border-color: #e6e6e6;
-            height: 200px;
+            height: 15em;
+            padding: 0.5em;
         }
 
         .tr-hover {
@@ -88,6 +89,14 @@
             display: inline-block;
             height: 100%;
             vertical-align: middle;
+        }
+
+        .sider-bar {
+            background-color: #e6e6e6;
+        }
+
+        .sider-bar:hover {
+            background-color: #d3d3d3;
         }
     </style>
 </head>
@@ -160,7 +169,21 @@
                 }
             }
 
+            setTimeout(() => {
+                if(configuration.methods) {
+                    let methods = configuration.methods;
+                    for(let method in methods) {
+                        if(method === 'eval') {
+                            methods[method]();
+                            continue;
+                        }
+                        window[method] = methods[method];
+                    }
+                }
+            }, 0);
+
             aim.appendChild(div);
+
         }
 
         function addHead(tblId, config) {
@@ -184,6 +207,8 @@
                             for(let styleItem in attrs[attr]) {
                                 div[attr][styleItem] = attrs[attr][styleItem];
                             }
+                        } else if(attr === 'class') {
+                            div.classList.add(attrs[attr]);
                         } else {
                             div[attr] = attrs[attr];
                         }
@@ -236,6 +261,8 @@
                             for(let styleItem in attrs[attr]) {
                                 div[attr][styleItem] = attrs[attr][styleItem];
                             }
+                        } else if(attr === 'class') {
+                            div.classList.add(attrs[attr]);
                         } else {
                             div[attr] = attrs[attr];
                         }
@@ -263,6 +290,19 @@
 
                 td.appendChild(div);
                 tr.appendChild(td);
+
+                setTimeout(() => {
+                    if(config[i].methods) {
+                        let methods = config[i].methods;
+                        for(let method in methods) {
+                            if(method === 'eval') {
+                                methods[method]();
+                                continue;
+                            }
+                            window[method] = methods[method];
+                        }
+                    }
+                }, 0);
             }
 
             table.appendChild(tr);
@@ -367,37 +407,59 @@
 
         var rowConfig = [
             {
-                content: `量子力学量力学，实变函数学事变；量子力学量力学，实变函数学事变；量子力学量力学，实变函数学事变；
-                量子力学量力学，实变函数学事变；量子力学量力学，实变函数学事变；`, 
+                templates: {
+                    default: `
+                    <div style="height: 100%;">
+                        <div style="display: inline-flex; flex-direction: column; justify-content: center; height: 100%; width: calc(100% - 1em); vertical-align: middle;">
+                            <div id="cntp" style="box-sizing: border-box; overflow: hidden;">
+                                <div id="cnt">
+                                    量子力学量力学，实变函数学十遍；量子力学量力学，实变函数学十遍；
+                                    量子力学量力学，实变函数学十遍；量子力学量力学，实变函数学十遍；
+                                    量子力学量力学，实变函数学十遍；量子力学量力学，实变函数学十遍；
+                                    量子力学量力学，实变函数学十遍；量子力学量力学，实变函数学十遍；
+                                    量子力学量力学，实变函数学十遍；量子力学量力学，实变函数学十遍；
+                                    量子力学量力学，实变函数学十遍；量子力学量力学，实变函数学十遍；
+                                    量子力学量力学，实变函数学十遍；量子力学量力学，实变函数学十遍；
+                                    量子力学量力学，实变函数学十遍；量子力学量力学，实变函数学十遍；
+                                    量子力学量力学，实变函数学十遍；量子力学量力学，实变函数学十遍；
+                                    量子力学量力学，实变函数学十遍；量子力学量力学，实变函数学十遍；
+                                    量子力学量力学，实变函数学十遍；量子力学量力学，实变函数学十遍；
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                         class="sider-bar"
+                         style="display: inline-flex; flex-direction: column; justify-content: center; height: 100%; width: 1em; vertical-align: middle;"
+                         onclick="clickSiderbar()"
+                        >
+                            >
+                        </div>
+                    </div>`
+                }, 
                 attrs: {
                     style: {
-                        padding: '7px 5px'
+                        'box-sizing': 'border-box', 
+                        height: 'calc(100% - 1em)', 
+                        width: 'calc(100% - 1em)', 
+                        position: 'absolute', 
+                        top: '0.5em', 
+                        overflow: 'hidden'
+                    }
+                }, 
+                methods: {
+                    clickSiderbar: function() {
+                        alert("Hello sider bar!");
                     }
                 }
             }, 
             {
-                content: '是', 
-                attrs: {
-                    style: {
-                        padding: '7px 5px'
-                    }
-                }
+                content: '是'
             }, 
             {
-                content: '2', 
-                attrs: {
-                    style: {
-                        padding: '7px 5px'
-                    }
-                }
+                content: '2'
             }, 
             {
-                content: '评分标准内容', 
-                attrs: {
-                    style: {
-                        padding: '7px 5px'
-                    }
-                }
+                content: '评分标准内容'
             }, 
             {
                 templates: {
@@ -405,7 +467,9 @@
                 }, 
                 attrs: {
                     style: {
-                        height: '100%'
+                        'box-sizing': 'border-box', 
+                        height: '100%', 
+                        width: '100%'
                     }
                 }
             }, 
@@ -420,15 +484,15 @@
                         <div style="box-sizing: border-box; height: 2.25em; padding: 0.25em 0.5em 0.5em 0.5em;">
                             <span style="color: #537ee4;">上传文件</span>
                         </div>
-                        <div id="upload" style="height: calc(100% - 3.25em); overflow: auto; margin: 0 0.5em 0.5em 0.5em;"></div>
+                        <div id="upload" style="box-sizing: border-box; height: calc(100% - 2.25em); overflow: auto;"></div>
                     </div>`
                 }, 
                 attrs: {
                     style: {
                         position: 'absolute', 
-                        top: '0', 
-                        height: '100%', 
-                        width: '100%'
+                        top: '0.5em', 
+                        height: 'calc(100% - 1em)', 
+                        width: 'calc(100% - 1em)'
                     }
                 }, 
                 relate: {
@@ -438,7 +502,7 @@
                         callWithArgs: {
                             // content: '图标', 
                             templates: {
-                                default: `<div style="display: inline-block; vertical-align: middle;">图标</div>`
+                                default: `<div style="display: inline-block; vertical-align: middle;" onclick="clickMe()">图标</div>`
                             }, 
                             attrs: {
                                 class: 'after-ele', 
@@ -446,6 +510,15 @@
                                     padding: '7px 5px', 
                                     'border-top': '0.5px solid #e6e6e6', 
                                     'flex-grow': '1'
+                                }
+                            }, 
+                            methods: {
+                                clickMe: function() {
+                                    alert('Are you clicking me?');
+                                }, 
+                                eval: function() {
+                                    let cntp = document.getElementById("cntp");
+                                    console.log(getComputedStyle(cntp).height);
                                 }
                             }
                         }

@@ -5,24 +5,23 @@
     <meta charset="utf-8">
     <title>html 简单的table样式</title>
     <style type="text/css">
+    /*****************************************************************************************************/
         /* body {
             background-color: rgb(75, 75, 75);
         } */
 
-        table tr td div {
+        table tr td > div > div {
             display: inline-block;
-            box-sizing: border-box;
             width: 100%;
             border-top: 0.5px solid #e6e6e6;
-            /* padding: 7px 5px; */
         }
 
-        table tr th div {
+        /* table tr th div > div {
             padding: 0.5em;
-        }
+        } */
 
         table tr td div:first-child {
-            border-top: 0px none transparent;
+            border-top: 0px none transparent !important;
         }
 
         table {
@@ -36,7 +35,6 @@
         table.table-box {
             font-family: verdana, arial, sans-serif;
             font-size: 11px;
-            /* color: rgba(51, 51, 51, 0.5); */
             color: rgba(0, 0, 0, 1);
             border-collapse: collapse;
         }
@@ -47,10 +45,12 @@
         }
 
         table.table-box td {
+            position: relative;
             overflow: hidden;
             border-width: 0.5px;
             border-style: solid;
             border-color: #e6e6e6;
+            height: 200px;
         }
 
         .tr-hover {
@@ -72,19 +72,23 @@
             font-weight: 500;
         }
 
-        table .table-body td div span {
+        table.table-box .sub-head td {
+            height: 2em;
+        }
+/*********************************************************************************************************/
+        /* table .table-body td div span {
             display: inline-block;
             width: 100%;
             color: #537ee4;
             margin: 0.5em;
-        }
+        } */
 
-        /* th::before, td::before {
+        .after-ele::before {
             content: '';
             display: inline-block;
             height: 100%;
             vertical-align: middle;
-        } */
+        }
     </style>
 </head>
 
@@ -128,15 +132,35 @@
     <button onclick="addSubHeadOpt()">添加子项头</button>
 
     <script type="text/javascript">
-        function addItem(aimedId, {content, style}) {
+        function addItem(aim, configuration) {
             let div = document.createElement("div");
 
-            div.innerHTML = content;
-            for(let styleItem in style) {
-                div.style[styleItem] = style[styleItem];
+            if(configuration.attrs) {
+                let attrs = configuration.attrs;
+                for(let attr in attrs) {
+                    if(attr === 'style') {
+                        for(let styleItem in attrs[attr]) {
+                            div[attr][styleItem] = attrs[attr][styleItem];
+                        }
+                    } else if(attr === 'class') {
+                        div.classList.add(attrs[attr]);
+                    } else {
+                        div[attr] = attrs[attr];
+                    }
+                }
             }
 
-            document.getElementById(aimedId).appendChild(div);
+            if(configuration.content) {
+                div.innerHTML = configuration.content;
+            } else if(configuration.templates) {
+                let templates = configuration.templates
+                for(let item in templates) {
+                    let el = createElementFromStr(templates[item].replace(/>[\t\n\s]+</g, '><').trim());
+                    div.appendChild(el);
+                }
+            }
+
+            aim.appendChild(div);
         }
 
         function addHead(tblId, config) {
@@ -147,8 +171,36 @@
             tr.classList.add("table-head");
             for(let i=0; i<config.length; i++) {
                 let th = document.createElement("th");
-                th.width = config[i].width;
-                th.innerHTML = `<div>` + `${config[i].content}` + `</div>`;
+                let div = document.createElement("div");
+
+                if(config[i].width) {
+                    th.width = config[i].width;
+                }
+
+                if(config[i].attrs) {
+                    let attrs = config[i].attrs;
+                    for(let attr in attrs) {
+                        if(attr === 'style') {
+                            for(let styleItem in attrs[attr]) {
+                                div[attr][styleItem] = attrs[attr][styleItem];
+                            }
+                        } else {
+                            div[attr] = attrs[attr];
+                        }
+                    }
+                }
+
+                if(config[i].content) {
+                    div.innerHTML = `<div style="padding: 0.5em;">` + `${config[i].content}` + `</div>`;
+                } else if(config[i].templates) {
+                    let templates = config[i].templates
+                    for(let item in templates) {
+                        let el = createElementFromStr(templates[item].replace(/>[\t\n\s]+</g, '><').trim());
+                        div.appendChild(el);
+                    }
+                }
+
+                th.appendChild(div);
                 tr.appendChild(th);
             }
 
@@ -163,6 +215,8 @@
             tr.classList.add("sub-head");
             tr.innerHTML = `<td colspan="${num}">` + `<div style="padding: 7px 5px;">` + `${content}` + `</div>` + `</td>`;
             table.appendChild(tr);
+
+            return tr;
         }
 
         function addTableRow(tblId, config) {
@@ -178,9 +232,7 @@
                 if(config[i].attrs) {
                     let attrs = config[i].attrs;
                     for(let attr in attrs) {
-                        // div[attr] = attrs[attr];
                         if(attr === 'style') {
-                            console.log(attrs[attr]);
                             for(let styleItem in attrs[attr]) {
                                 div[attr][styleItem] = attrs[attr][styleItem];
                             }
@@ -191,16 +243,19 @@
                 }
 
                 if(config[i].content) {
-                    div.innerHTML = `<div style="padding: 5px;">` + `${config[i].content}` + `</div>`;
+                    div.innerHTML = `<div>` + `${config[i].content}` + `</div>`;
                 } else if(config[i].templates) {
                     let templates = config[i].templates
                     for(let item in templates) {
-                        let el = createElementFromStr(templates[item]);
+                        let el = createElementFromStr(templates[item].replace(/>[\t\n\s]+</g, '><').trim());
                         if(config[i].relate) {
                             let relate = config[i].relate;
-                            el.addEventListener(relate[item].event, () => {
-                                relate[item].callback(item, (relate[item].args));
-                            });
+                            if(relate[item]) {
+                                el.addEventListener(relate[item].event, () => {
+                                    let aim = document.getElementById(item);
+                                    relate[item].callback(aim, (relate[item].callWithArgs));
+                                });
+                            }
                         }
                         div.appendChild(el);
                     }
@@ -211,6 +266,7 @@
             }
 
             table.appendChild(tr);
+            return tr;
         }
 
         function createElementFromStr(str) {
@@ -219,65 +275,93 @@
             return div.childNodes[0];
         }
 
-        function tablify () {
-            let rows = document.getElementsByTagName("tr");
-            
-            for(let i=0; i<rows.length; i++) {
-                rows[i].firstElementChild.style.borderLeftWidth = '0px';
-                rows[i].lastElementChild.style.borderRightWidth = '0px';
+        function tablify (tr) {
+            tr.firstElementChild.style.borderLeftWidth = '0px';
+            tr.lastElementChild.style.borderRightWidth = '0px';
 
-                rows[i].onmouseover = function(e) {
-                    if(!this.classList.contains('sub-head')) {
-                        this.classList.add('tr-hover');
-                    }
+            tr.onmouseover = function(e) {
+                if(!this.classList.contains('sub-head')) {
+                    this.classList.add('tr-hover');
                 }
+            }
 
-                rows[i].onmouseout = function(e) {
-                    if(!this.classList.contains('sub-head')) {
-                        this.classList.remove('tr-hover');
-                    }
+            tr.onmouseout = function(e) {
+                if(!this.classList.contains('sub-head')) {
+                    this.classList.remove('tr-hover');
                 }
             }
         }
 
         function addSubHeadOpt() {
-            addSubHead("pseudo-dynamic-table", "人员管理", config.length);
-            tablify();
+            let tr = addSubHead("pseudo-dynamic-table", "人员管理", config.length);
+            tablify(tr);
         }
 
         function addTableRowOpt() {
-            addTableRow("pseudo-dynamic-table", rowConfig);
-            tablify();
+            let tr = addTableRow("pseudo-dynamic-table", rowConfig);
+            tablify(tr);
         }
 
         var config = [
             {
                 width: '14.286%', 
-                content: '序号'
+                content: '序号', 
+                attrs: {
+                    style: {
+                        padding: '7px 5px'
+                    }
+                }
             }, 
             {
                 width: '14.286%', 
-                content: '内容'
+                content: '内容', 
+                attrs: {
+                    style: {
+                        padding: '7px 5px'
+                    }
+                }
             }, 
             {
                 width: '14.286%', 
-                content: '分值'
+                content: '分值', 
+                attrs: {
+                    style: {
+                        padding: '7px 5px'
+                    }
+                }
             }, 
             {
                 width: '14.286%', 
-                content: '评分标准'
+                content: '评分标准', 
+                attrs: {
+                    style: {
+                        padding: '7px 5px'
+                    }
+                }
+            }, 
+            {
+                width: '28.572%', 
+                templates: {
+                    default: `
+                    <div style="display: inline-block; width: 100%;">
+                        <div style="display: inline-block; width: 50%; float: left; padding: 0;">解决方法</div>
+                        <div style="display: inline-block; width: 50%; float: left; padding: 0;">是否完成</div>
+                    </div>`
+                },
+                attrs: {
+                    style: {
+                        padding: '7px 5px'
+                    }
+                }
             }, 
             {
                 width: '14.286%', 
-                content: '解决方法'
-            }, 
-            {
-                width: '14.286%', 
-                content: '是否完成'
-            }, 
-            {
-                width: '14.286%', 
-                content: '操作'
+                content: '操作', 
+                attrs: {
+                    style: {
+                        padding: '7px 5px'
+                    }
+                }
             }
         ];
 
@@ -316,40 +400,65 @@
                 }
             }, 
             {
-                content: '父内容', 
+                templates: {
+                    default: `<div id="icon" style="display: flex; flex-direction: column; width: 100%; height: 100%; "></div>`
+                }, 
                 attrs: {
-                    id: 'icon'
-                }
-            }, 
-            {
-                content: '父内容', 
-                attrs: {
-                    id: 'text'
+                    style: {
+                        height: '100%'
+                    }
                 }
             }, 
             {
                 templates: {
-                    icon: `<span>添加清单</span>`, 
-                    text: `<span>上传文件</span>`
+                    icon: `
+                    <div style="box-sizing: border-box; height: 2.25em; padding: 0.5em 0.5em 0.25em 0.5em;">
+                        <span style="color: #537ee4;">添加清单</span>
+                    </div>`, 
+                    upload: `
+                    <div style="box-sizing: border-box; height: calc(100% - 2.25em);">
+                        <div style="box-sizing: border-box; height: 2.25em; padding: 0.25em 0.5em 0.5em 0.5em;">
+                            <span style="color: #537ee4;">上传文件</span>
+                        </div>
+                        <div id="upload" style="height: calc(100% - 3.25em); overflow: auto; margin: 0 0.5em 0.5em 0.5em;"></div>
+                    </div>`
+                }, 
+                attrs: {
+                    style: {
+                        position: 'absolute', 
+                        top: '0', 
+                        height: '100%', 
+                        width: '100%'
+                    }
                 }, 
                 relate: {
                     icon: {
                         event: 'click',
                         callback: addItem, 
-                        args: {
-                            content: '图标', 
-                            style: {
-                                padding: '7px 5px'
+                        callWithArgs: {
+                            // content: '图标', 
+                            templates: {
+                                default: `<div style="display: inline-block; vertical-align: middle;">图标</div>`
+                            }, 
+                            attrs: {
+                                class: 'after-ele', 
+                                style: {
+                                    padding: '7px 5px', 
+                                    'border-top': '0.5px solid #e6e6e6', 
+                                    'flex-grow': '1'
+                                }
                             }
                         }
                     }, 
-                    text: {
+                    upload: {
                         event: 'click',
                         callback: addItem, 
-                        args: {
-                            content: 'XXX内容', 
-                            style: {
-                                padding: '7px 5px'
+                        callWithArgs: {
+                            content: `XXX文件.pdf`, 
+                            attrs: {
+                                style: {
+                                    padding: '1.5px 13px'
+                                }
                             }
                         }
                     }

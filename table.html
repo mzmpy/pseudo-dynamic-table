@@ -476,15 +476,16 @@
             {
                 templates: {
                     icon: `
-                    <div style="box-sizing: border-box; height: 2.25em; padding: 0.5em 0.5em 0.25em 0.5em;">
+                    <div style="box-sizing: border-box; height: 3em; padding: 0.5em 0.5em 0.25em 0.5em;">
                         <span style="color: #537ee4;">添加清单</span>
                     </div>`, 
                     upload: `
-                    <div style="box-sizing: border-box; height: calc(100% - 2.25em);">
-                        <div style="box-sizing: border-box; height: 2.25em; padding: 0.25em 0.5em 0.5em 0.5em;">
-                            <span style="color: #537ee4;">上传文件</span>
-                        </div>
-                        <div id="upload" style="box-sizing: border-box; height: calc(100% - 2.25em); overflow: auto;"></div>
+                    <div style="box-sizing: border-box; height: 3em; padding: 0.25em 0.5em 0.5em 0.5em;">
+                        <span style="color: #537ee4;">上传文件</span>
+                    </div>`, 
+                    default: `
+                    <div style="box-sizing: border-box; height: calc(100% - 6em);">
+                        <div id="upload" style="box-sizing: border-box; height: 100%; overflow: auto;"></div>
                     </div>`
                 }, 
                 attrs: {
